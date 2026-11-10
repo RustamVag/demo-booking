@@ -20,7 +20,8 @@ class BookingIndexTest extends TestCase
 
         Sanctum::actingAs($user);
 
-        $this->getJson('/api/bookings')
+        $this->withToken('test-token')
+            ->getJson('/api/bookings')
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id', $own->id);
@@ -28,6 +29,8 @@ class BookingIndexTest extends TestCase
 
     public function test_requires_authentication(): void
     {
-        $this->getJson('/api/bookings')->assertUnauthorized();
+        $this->withToken('invalid-token')
+            ->getJson('/api/bookings')
+            ->assertUnauthorized();
     }
 }

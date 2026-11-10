@@ -313,7 +313,7 @@ class BookingStoreTest extends TestCase
     {
         Sanctum::actingAs($this->user);
 
-        return $this->postJson('/api/bookings', $payload);
+        return $this->withToken('test-token')->postJson('/api/bookings', $payload);
     }
 
     private function createBooking(string $startsAt, string $endsAt, ?Room $room = null): Booking

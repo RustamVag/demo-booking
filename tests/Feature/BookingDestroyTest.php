@@ -22,7 +22,8 @@ class BookingDestroyTest extends TestCase
 
         Sanctum::actingAs($author);
 
-        $this->deleteJson("/api/bookings/{$booking->id}")
+        $this->withToken('test-token')
+            ->deleteJson("/api/bookings/{$booking->id}")
             ->assertNoContent();
 
         $this->assertDatabaseMissing('bookings', ['id' => $booking->id]);
@@ -38,7 +39,8 @@ class BookingDestroyTest extends TestCase
 
         Sanctum::actingAs(User::factory()->create());
 
-        $this->deleteJson("/api/bookings/{$booking->id}")
+        $this->withToken('test-token')
+            ->deleteJson("/api/bookings/{$booking->id}")
             ->assertNotFound();
 
         $this->assertDatabaseHas('bookings', ['id' => $booking->id]);
@@ -51,7 +53,8 @@ class BookingDestroyTest extends TestCase
     {
         Sanctum::actingAs(User::factory()->create());
 
-        $this->deleteJson('/api/bookings/999999')
+        $this->withToken('test-token')
+            ->deleteJson('/api/bookings/999999')
             ->assertNotFound();
     }
 
@@ -62,7 +65,8 @@ class BookingDestroyTest extends TestCase
     {
         $booking = Booking::factory()->create();
 
-        $this->deleteJson("/api/bookings/{$booking->id}")
+        $this->withToken('invalid-token')
+            ->deleteJson("/api/bookings/{$booking->id}")
             ->assertUnauthorized();
 
         $this->assertDatabaseHas('bookings', ['id' => $booking->id]);
