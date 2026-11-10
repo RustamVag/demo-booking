@@ -91,7 +91,9 @@ class BookingController extends Controller
 
     public function destroy(Request $request, string $id): \Illuminate\Http\Response
     {
-        $booking = $request->user()->bookings()->findOrFail($id);
+        $booking = $request->user()
+            ->bookings()
+            ->findOrFail($id);
 
         $booking->delete();
 
