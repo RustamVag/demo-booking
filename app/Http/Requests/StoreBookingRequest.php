@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Rules\Iso8601Date;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -16,8 +17,8 @@ class StoreBookingRequest extends FormRequest
         return [
             'room_id'   => ['required', 'integer', 'exists:rooms,id'],
             'title'     => ['required', 'string', 'max:255'],
-            'starts_at' => ['required', 'date'],
-            'ends_at'   => ['required', 'date', 'after:starts_at'],
+            'starts_at' => ['required', new Iso8601Date()],
+            'ends_at'   => ['required', new Iso8601Date(), 'after:starts_at'],
         ];
     }
 }
