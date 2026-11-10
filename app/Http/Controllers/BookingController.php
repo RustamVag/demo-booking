@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DestroyBookingRequest;
 use App\Http\Requests\StoreBookingRequest;
 use App\Models\Booking;
 use App\Models\Room;
@@ -32,12 +33,6 @@ class BookingController extends Controller
 
         $start = Carbon::parse($data['starts_at'])->setTimezone($timezone);
         $end   = Carbon::parse($data['ends_at'])->setTimezone($timezone);
-
-        if ($end->lte($start)) {
-            throw ValidationException::withMessages([
-                'ends_at' => 'Время окончания должно быть позже времени начала.',
-            ]);
-        }
 
         $duration = (int) $start->diffInMinutes($end);
 
@@ -89,7 +84,7 @@ class BookingController extends Controller
         return response()->json($booking, 201);
     }
 
-    public function destroy(Request $request, string $id): \Illuminate\Http\Response
+    public function destroy(DestroyBookingRequest $request, string $id): \Illuminate\Http\Response
     {
         $booking = $request->user()
             ->bookings()
