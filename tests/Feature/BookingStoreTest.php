@@ -31,6 +31,9 @@ class BookingStoreTest extends TestCase
         $this->room = Room::factory()->for(Office::factory()->create())->create();
     }
 
+    /**
+     * Проверяет, что бронь создаётся с автором из аутентификации и корректными room_id и user_id в ответе и БД.
+     */
     public function test_creates_booking_with_authenticated_user_as_author(): void
     {
         $this->postBooking($this->bookingPayload(self::isoAt('10:00'), self::isoAt('11:00')))
@@ -46,6 +49,9 @@ class BookingStoreTest extends TestCase
         ]);
     }
 
+    /**
+     * Проверяет, что время с любым смещением (Z, +03:00, +06:00, -05:00) сохраняется в БД в UTC.
+     */
     #[DataProvider('clientOffsetProvider')]
     public function test_stores_time_in_utc_regardless_of_client_offset(string $startsAt, string $endsAt): void
     {
@@ -67,6 +73,9 @@ class BookingStoreTest extends TestCase
         ];
     }
 
+    /**
+     * Проверяет, что встречи впритык в одной комнате разрешены.
+     */
     public function test_allows_back_to_back_bookings_in_same_room(): void
     {
         $this->createBooking(self::isoAt('10:00'), self::isoAt('11:00'));
@@ -80,6 +89,9 @@ class BookingStoreTest extends TestCase
         $this->assertDatabaseCount('bookings', 3);
     }
 
+    /**
+     * Проверяет, что любое пересечение с существующей бронью в той же комнате возвращает 409 и не создаёт запись.
+     */
     #[DataProvider('overlappingTimesProvider')]
     public function test_rejects_booking_overlapping_existing_one_in_same_room(string $startsAt, string $endsAt): void
     {
@@ -103,6 +115,9 @@ class BookingStoreTest extends TestCase
         ];
     }
 
+    /**
+     * Проверяет, что бронь на то же время в другой комнате того же офиса не считается конфликтом.
+     */
     public function test_allows_same_time_in_another_room(): void
     {
         $this->createBooking(self::isoAt('10:00'), self::isoAt('11:00'));
@@ -115,6 +130,9 @@ class BookingStoreTest extends TestCase
         $this->assertDatabaseCount('bookings', 2);
     }
 
+    /**
+     * Проверяет, что длительность ровно 15 минут и ровно 4 часа являются допустимыми границами.
+     */
     #[DataProvider('validDurationProvider')]
     public function test_accepts_duration_from_15_minutes_to_4_hours(string $startsAt, string $endsAt): void
     {
@@ -131,6 +149,9 @@ class BookingStoreTest extends TestCase
         ];
     }
 
+    /**
+     * Проверяет, что нулевая, отрицательная, короче 15 минут и длиннее 4 часов длительности отклоняются с 422.
+     */
     #[DataProvider('invalidDurationProvider')]
     public function test_rejects_invalid_duration(string $startsAt, string $endsAt, string $errorField): void
     {
@@ -147,10 +168,13 @@ class BookingStoreTest extends TestCase
             'конец совпадает с началом' => [self::isoAt('10:00'), self::isoAt('10:00'), 'ends_at'],
             'конец раньше начала' => [self::isoAt('11:00'), self::isoAt('10:00'), 'ends_at'],
             'короче 15 минут' => [self::isoAt('10:00'), self::isoAt('10:10'), 'starts_at'],
-            'длительнее 4 часов' => [self::isoAt('10:00'), self::isoAt('14:15'), 'starts_at'],
+            'дольше 4 часов' => [self::isoAt('10:00'), self::isoAt('14:15'), 'starts_at'],
         ];
     }
 
+    /**
+     * Проверяет, что начало или конец не на сетке 15 минут либо с ненулевыми секундами отклоняются с 422.
+     */
     #[DataProvider('misalignedTimeProvider')]
     public function test_rejects_times_not_aligned_to_15_minute_grid(string $startsAt, string $endsAt): void
     {
@@ -170,6 +194,9 @@ class BookingStoreTest extends TestCase
         ];
     }
 
+    /**
+     * Проверяет, что бронь в границах 09:00–20:00 по местному времени офиса (Москва, Новосибирск) создаётся.
+     */
     #[DataProvider('validWorkingHoursProvider')]
     public function test_accepts_booking_inside_office_working_hours(string $timezone, string $startsAt, string $endsAt): void
     {
@@ -190,6 +217,9 @@ class BookingStoreTest extends TestCase
         ];
     }
 
+    /**
+     * Проверяет, что бронь, выходящая за 09:00–20:00 по времени офиса комнаты, отклоняется с 422.
+     */
     #[DataProvider('invalidWorkingHoursProvider')]
     public function test_rejects_booking_outside_office_working_hours(string $timezone, string $startsAt, string $endsAt): void
     {
@@ -214,6 +244,9 @@ class BookingStoreTest extends TestCase
         ];
     }
 
+    /**
+     * Проверяет, что бронирование на любые даты (прошлое и далёкое будущее) не ограничивается.
+     */
     public function test_does_not_restrict_booking_dates(): void
     {
         $this->postBooking($this->bookingPayload('2020-01-15T10:00:00+03:00', '2020-01-15T11:00:00+03:00'))
@@ -225,6 +258,9 @@ class BookingStoreTest extends TestCase
         $this->assertDatabaseCount('bookings', 2);
     }
 
+    /**
+     * Проверяет, что некорректные или отсутствующие поля запроса возвращают 422 с ошибкой по нужному полю.
+     */
     #[DataProvider('invalidPayloadProvider')]
     public function test_returns_validation_errors_for_invalid_payload(array $overrides, string $errorField): void
     {
