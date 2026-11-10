@@ -12,6 +12,9 @@ class BookingDestroyTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Пользователь может удалить свое бронирование
+     */
     public function test_author_can_cancel_own_booking(): void
     {
         $author = User::factory()->create();
@@ -25,6 +28,9 @@ class BookingDestroyTest extends TestCase
         $this->assertDatabaseMissing('bookings', ['id' => $booking->id]);
     }
 
+    /**
+     * Пользователь не может удалить чужое бронирование
+     */
     public function test_user_cannot_cancel_booking_of_another_user(): void
     {
         $author = User::factory()->create();
@@ -38,6 +44,9 @@ class BookingDestroyTest extends TestCase
         $this->assertDatabaseHas('bookings', ['id' => $booking->id]);
     }
 
+    /**
+     * Несуществующая бронь
+     */
     public function test_returns_not_found_for_missing_booking(): void
     {
         Sanctum::actingAs(User::factory()->create());
@@ -46,6 +55,9 @@ class BookingDestroyTest extends TestCase
             ->assertNotFound();
     }
 
+    /**
+     * Не авторизован
+     */
     public function test_requires_authentication(): void
     {
         $booking = Booking::factory()->create();

@@ -245,7 +245,7 @@ class BookingStoreTest extends TestCase
     }
 
     /**
-     * Проверяет, что бронирование на любые даты (прошлое и далёкое будущее) не ограничивается.
+     * Проверяет, что бронирование на любые даты (прошлое и далёкое будущее) не ограничивается. ???
      */
     public function test_does_not_restrict_booking_dates(): void
     {
