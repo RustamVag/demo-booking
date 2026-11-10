@@ -34,6 +34,12 @@ class BookingController extends Controller
         $start = Carbon::parse($data['starts_at'])->setTimezone($timezone);
         $end   = Carbon::parse($data['ends_at'])->setTimezone($timezone);
 
+        if ($end->lte($start)) {
+            throw ValidationException::withMessages([
+                'ends_at' => 'Время окончания должно быть позже времени начала.',
+            ]);
+        }
+
         $duration = (int) $start->diffInMinutes($end);
 
         $validGrid = $start->second === 0 && $end->second === 0

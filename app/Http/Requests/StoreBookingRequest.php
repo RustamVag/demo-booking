@@ -18,7 +18,7 @@ class StoreBookingRequest extends FormRequest
             'room_id'   => ['required', 'integer', 'exists:rooms,id'],
             'title'     => ['required', 'string', 'max:255'],
             'starts_at' => ['required', new Iso8601Date()],
-            'ends_at'   => ['required', new Iso8601Date(), 'after:starts_at'],
+            'ends_at'   => ['required', new Iso8601Date()],
         ];
     }
 
